@@ -2,16 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/lib/db";
-import Playlist from "@/models/Playlist";
-import Asset from "@/models/Asset";
-import mongoose from "mongoose";
+import Display from "@/models/Display";
 
-// Ensure models are registered
-if (!mongoose.models.Asset) {
-  mongoose.model("Asset", Asset.schema);
-}
-
-// GET /api/playlists - Get all playlists for the current user
+// GET /api/displays - Get all displays for the user
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -22,18 +15,18 @@ export async function GET() {
 
     await connectDB();
 
-    const playlists = await Playlist.find({ userId: session.user.id })
-      .populate("items.assetId")
+    const displays = await Display.find({ userId: session.user.id })
+      .populate("playlistId")
       .sort({ createdAt: -1 });
 
-    return NextResponse.json(playlists);
+    return NextResponse.json(displays);
   } catch (error) {
-    console.error("[PLAYLISTS_GET]", error);
+    console.error("[DISPLAYS_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
 
-// POST /api/playlists - Create a new playlist
+// POST /api/displays - Create a new display
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -43,23 +36,31 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, items } = body;
+    const { name, deviceId, location, resolution } = body;
 
-    if (!name) {
-      return new NextResponse("Name is required", { status: 400 });
+    if (!name || !deviceId || !location || !resolution) {
+      return new NextResponse("Missing required fields", { status: 400 });
     }
 
     await connectDB();
 
-    const playlist = await Playlist.create({
+    // Check if deviceId already exists
+    const existingDisplay = await Display.findOne({ deviceId });
+    if (existingDisplay) {
+      return new NextResponse("Device ID already exists", { status: 400 });
+    }
+
+    const display = await Display.create({
       name,
-      items,
+      deviceId,
+      location,
+      resolution,
       userId: session.user.id,
     });
 
-    return NextResponse.json(playlist);
+    return NextResponse.json(display);
   } catch (error) {
-    console.error("[PLAYLISTS_POST]", error);
+    console.error("[DISPLAYS_POST]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
