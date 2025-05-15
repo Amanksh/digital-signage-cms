@@ -45,7 +45,7 @@ export async function uploadToS3(file: File, key: string) {
     }
 
     // Return the public URL
-    return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+    return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.REGION}.amazonaws.com/${key}`;
   } catch (error) {
     console.error("[S3_UPLOAD_ERROR]", error);
     throw new Error(
