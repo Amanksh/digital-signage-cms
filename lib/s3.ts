@@ -2,19 +2,19 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 if (
-  !process.env.AWS_REGION ||
-  !process.env.AWS_ACCESS_KEY_ID ||
-  !process.env.AWS_SECRET_ACCESS_KEY ||
+  !process.env.REGION ||
+  !process.env.KEY_ID ||
+  !process.env.ACCESS_KEY ||
   !process.env.AWS_BUCKET_NAME
 ) {
   throw new Error("Missing required AWS environment variables");
 }
 
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
+  region: process.env.REGION,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    accessKeyId: process.env.KEY_ID,
+    secretAccessKey: process.env.ACCESS_KEY,
   },
 });
 
