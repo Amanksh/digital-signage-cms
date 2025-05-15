@@ -4,7 +4,8 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/lib/db";
 import Playlist from "@/models/Playlist";
 
-export async function GET(request: Request) {
+// GET /api/playlists - Get all playlists for the user
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
@@ -15,16 +16,17 @@ export async function GET(request: Request) {
     await connectDB();
 
     const playlists = await Playlist.find({ userId: session.user.id })
-      .populate("items.asset")
+      .populate("items.assetId")
       .sort({ createdAt: -1 });
 
     return NextResponse.json(playlists);
   } catch (error) {
-    console.log("[PLAYLISTS_GET_ERROR]", error);
+    console.error("[PLAYLISTS_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
 
+// POST /api/playlists - Create a new playlist
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -34,10 +36,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, description, items } = body;
+    const { name, description, items, schedule } = body;
 
-    if (!name) {
-      return new NextResponse("Name is required", { status: 400 });
+    if (!name || !description) {
+      return new NextResponse("Missing required fields", { status: 400 });
     }
 
     await connectDB();
@@ -47,11 +49,13 @@ export async function POST(request: Request) {
       description,
       userId: session.user.id,
       items: items || [],
+      schedule,
+      status: schedule ? "scheduled" : "inactive",
     });
 
     return NextResponse.json(playlist);
   } catch (error) {
-    console.log("[PLAYLIST_CREATE_ERROR]", error);
+    console.error("[PLAYLISTS_POST]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

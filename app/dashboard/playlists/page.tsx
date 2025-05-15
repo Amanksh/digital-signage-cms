@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Clock,
@@ -11,6 +11,7 @@ import {
   Search,
   Trash,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,37 +29,96 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/components/ui/use-toast";
 
 type Playlist = {
-  id: string;
+  _id: string;
   name: string;
   description: string;
-  itemCount: number;
-  duration: string;
   status: "active" | "inactive" | "scheduled";
-  thumbnail: string;
+  items: {
+    assetId: {
+      _id: string;
+      name: string;
+      type: string;
+      url: string;
+    };
+    duration: number;
+    order: number;
+  }[];
+  schedule?: {
+    startDate: string;
+    endDate: string;
+    daysOfWeek: number[];
+    startTime: string;
+    endTime: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 };
 
 export default function PlaylistsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("all");
 
-  const playlists: Playlist[] = [
-    {
-      id: "1",
-      name: "Main Lobby Display",
-      description: "Content for the main lobby display",
-      itemCount: 8,
-      duration: "5:30",
-      status: "active",
-      thumbnail: "/placeholder.svg?height=200&width=300",
-    },
-  ];
+  useEffect(() => {
+    fetchPlaylists();
+  }, []);
 
-  const filteredPlaylists = playlists.filter(
-    (playlist) =>
+  const fetchPlaylists = async () => {
+    try {
+      const response = await fetch("/api/playlists");
+      if (!response.ok) throw new Error("Failed to fetch playlists");
+      const data = await response.json();
+      setPlaylists(data);
+    } catch (error) {
+      console.error("Error fetching playlists:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load playlists. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (playlistId: string) => {
+    if (!confirm("Are you sure you want to delete this playlist?")) return;
+
+    try {
+      const response = await fetch(`/api/playlists/${playlistId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete playlist");
+
+      toast({
+        title: "Success",
+        description: "Playlist deleted successfully",
+      });
+
+      fetchPlaylists();
+    } catch (error) {
+      console.error("Error deleting playlist:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete playlist. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const filteredPlaylists = playlists.filter((playlist) => {
+    const matchesSearch =
       playlist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      playlist.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      playlist.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (activeTab === "all") return matchesSearch;
+    return matchesSearch && playlist.status === activeTab;
+  });
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
@@ -72,6 +132,24 @@ export default function PlaylistsPage() {
         return "bg-gray-100 text-gray-800 dark:bg-gray-800/30 dark:text-gray-400";
     }
   };
+
+  const formatDuration = (items: Playlist["items"]) => {
+    const totalSeconds = items.reduce((acc, item) => acc + item.duration, 0);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="text-muted-foreground">Loading playlists...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -98,45 +176,22 @@ export default function PlaylistsPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="all">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="active">Active</TabsTrigger>
           <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
           <TabsTrigger value="inactive">Inactive</TabsTrigger>
         </TabsList>
-        <TabsContent value="all" className="mt-4">
+        <TabsContent value={activeTab} className="mt-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredPlaylists.map((playlist) => (
-              <PlaylistCard key={playlist.id} playlist={playlist} />
+              <PlaylistCard
+                key={playlist._id}
+                playlist={playlist}
+                onDelete={handleDelete}
+              />
             ))}
-          </div>
-        </TabsContent>
-        <TabsContent value="active" className="mt-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredPlaylists
-              .filter((playlist) => playlist.status === "active")
-              .map((playlist) => (
-                <PlaylistCard key={playlist.id} playlist={playlist} />
-              ))}
-          </div>
-        </TabsContent>
-        <TabsContent value="scheduled" className="mt-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredPlaylists
-              .filter((playlist) => playlist.status === "scheduled")
-              .map((playlist) => (
-                <PlaylistCard key={playlist.id} playlist={playlist} />
-              ))}
-          </div>
-        </TabsContent>
-        <TabsContent value="inactive" className="mt-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredPlaylists
-              .filter((playlist) => playlist.status === "inactive")
-              .map((playlist) => (
-                <PlaylistCard key={playlist.id} playlist={playlist} />
-              ))}
           </div>
         </TabsContent>
       </Tabs>
@@ -144,7 +199,14 @@ export default function PlaylistsPage() {
   );
 }
 
-function PlaylistCard({ playlist }: { playlist: Playlist }) {
+function PlaylistCard({
+  playlist,
+  onDelete,
+}: {
+  playlist: Playlist;
+  onDelete: (id: string) => void;
+}) {
+  const router = useRouter();
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case "active":
@@ -158,21 +220,34 @@ function PlaylistCard({ playlist }: { playlist: Playlist }) {
     }
   };
 
+  const formatDuration = (items: Playlist["items"]) => {
+    const totalSeconds = items.reduce((acc, item) => acc + item.duration, 0);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+  const thumbnail = playlist.items[0]?.assetId?.url || "/placeholder.svg";
+
+  const handlePreview = () => {
+    router.push(`/dashboard/playlists/preview/${playlist._id}`);
+  };
+
   return (
     <Card>
       <div className="relative aspect-video">
         <img
-          src={playlist.thumbnail || "/placeholder.svg"}
+          src={thumbnail}
           alt={playlist.name}
           className="h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity hover:opacity-100">
           <div className="flex h-full items-center justify-center gap-2">
-            <Button size="sm" variant="secondary">
+            <Button size="sm" variant="secondary" onClick={handlePreview}>
               <Play className="mr-1 h-3 w-3" />
               Preview
             </Button>
-            <Link href={`/dashboard/playlists/${playlist.id}/edit`}>
+            <Link href={`/dashboard/playlists/${playlist._id}/edit`}>
               <Button size="sm" variant="secondary">
                 <Edit className="mr-1 h-3 w-3" />
                 Edit
@@ -201,17 +276,22 @@ function PlaylistCard({ playlist }: { playlist: Playlist }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handlePreview}>
                 <Play className="mr-2 h-4 w-4" />
                 Preview
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
+              <DropdownMenuItem asChild>
+                <Link href={`/dashboard/playlists/${playlist._id}/edit`}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>Duplicate</DropdownMenuItem>
               <DropdownMenuItem>Assign to display</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={() => onDelete(playlist._id)}
+              >
                 <Trash className="mr-2 h-4 w-4" />
                 Delete
               </DropdownMenuItem>
@@ -225,9 +305,9 @@ function PlaylistCard({ playlist }: { playlist: Playlist }) {
       <CardFooter className="flex justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
-          {playlist.duration}
+          {formatDuration(playlist.items)}
         </div>
-        <div>{playlist.itemCount} items</div>
+        <div>{playlist.items.length} items</div>
       </CardFooter>
     </Card>
   );
