@@ -41,15 +41,34 @@ const PlaylistPreviewPage = ({
     fetchPlaylist();
     document.body.style.overflow = "hidden";
 
+    // Enter fullscreen mode when component mounts
+    if (containerRef.current) {
+      containerRef.current.requestFullscreen().catch((err) => {
+        console.error("Error entering fullscreen:", err);
+      });
+    }
+
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        }
+        router.back();
+      }
+    };
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
         router.back();
       }
     };
 
     window.addEventListener("keydown", handleKeyPress);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
       document.body.style.overflow = "auto";
       if (timerRef.current) {
         clearTimeout(timerRef.current);
@@ -89,20 +108,6 @@ const PlaylistPreviewPage = ({
     }, currentItem.duration * 1000);
   };
 
-  const handleFullscreen = async () => {
-    if (!containerRef.current) return;
-
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      } else {
-        await containerRef.current.requestFullscreen();
-      }
-    } catch (error) {
-      console.error("Error toggling fullscreen:", error);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black">
@@ -138,14 +143,18 @@ const PlaylistPreviewPage = ({
     <div
       ref={containerRef}
       className="fixed inset-0 flex items-center justify-center bg-black"
-      onClick={handleFullscreen}
     >
       <div className="absolute right-4 top-4 z-50">
         <Button
           variant="outline"
           size="icon"
           className="bg-black/50 text-white hover:bg-black/70"
-          onClick={() => router.back()}
+          onClick={() => {
+            if (document.fullscreenElement) {
+              document.exitFullscreen();
+            }
+            router.back();
+          }}
         >
           <X className="h-4 w-4" />
         </Button>

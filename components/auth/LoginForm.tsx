@@ -32,12 +32,13 @@ export default function LoginForm() {
         password,
         redirect: false,
       });
-
+      console.log("result", result);
       if (!result?.ok) {
         // Check if the user exists
         const userExists = await fetch(
           `/api/auth/check-user?email=${encodeURIComponent(email)}`
         );
+        console.log("userExists", userExists);
         const { exists } = await userExists.json();
 
         if (!exists) {
