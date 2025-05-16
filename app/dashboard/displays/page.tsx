@@ -57,14 +57,22 @@ export default function DisplaysPage() {
   const fetchDisplays = async () => {
     try {
       const response = await fetch("/api/displays");
-      if (!response.ok) throw new Error("Failed to fetch displays");
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to fetch displays:", response.status, errorText);
+        throw new Error(
+          `Failed to fetch displays: ${response.status} ${errorText}`
+        );
+      }
       const data = await response.json();
+      console.log("Fetched displays:", data);
       setDisplays(data);
     } catch (error) {
       console.error("Error fetching displays:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch displays",
+        description:
+          error instanceof Error ? error.message : "Failed to fetch displays",
         variant: "destructive",
       });
     } finally {
