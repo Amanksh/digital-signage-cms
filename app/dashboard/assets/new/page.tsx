@@ -203,9 +203,15 @@ export default function NewAssetPage() {
 
     try {
       const formData = new FormData(e.currentTarget);
-      formData.append("type", "URL");
+      const name = formData.get("name") as string;
+      const url = formData.get("url") as string;
+      const contentType = formData.get("contentType") as string;
 
-      const response = await fetch("/api/assets/upload", {
+      if (!name || !url || !contentType) {
+        throw new Error("Please fill in all required fields");
+      }
+
+      const response = await fetch("/api/assets/url", {
         method: "POST",
         body: formData,
       });
@@ -215,7 +221,7 @@ export default function NewAssetPage() {
         throw new Error(error);
       }
 
-      const asset = await response.json();
+      const result = await response.json();
 
       toast({
         title: "URL asset added successfully",

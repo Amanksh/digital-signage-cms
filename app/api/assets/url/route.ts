@@ -1,37 +1,72 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import connectDB from "@/lib/db";
+import Asset from "@/models/Asset";
+
+// Map form content types to asset types
+const contentTypeMap: Record<string, "IMAGE" | "VIDEO" | "URL"> = {
+  image: "IMAGE",
+  video: "VIDEO",
+  webpage: "URL",
+};
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData()
-    const name = formData.get("name") as string
-    const url = formData.get("url") as string
-    const contentType = formData.get("contentType") as string
+    const session = await getServerSession(authOptions);
 
-    if (!url) {
-      return NextResponse.json({ error: "No URL provided" }, { status: 400 })
+    if (!session?.user) {
+      return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // In a real application, you would:
-    // 1. Validate the URL
-    // 2. Possibly fetch metadata from the URL
-    // 3. Store the URL and metadata in your database
+    const formData = await request.formData();
+    const name = formData.get("name") as string;
+    const url = formData.get("url") as string;
+    const contentType = formData.get("contentType") as string;
 
-    // Simulate processing time
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    if (!name || !url || !contentType) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
-    // Return success response with asset details
-    return NextResponse.json({
-      success: true,
-      asset: {
-        id: `url-${Date.now()}`,
-        name,
-        type: contentType || "webpage",
-        url,
-        createdAt: new Date().toISOString(),
-      },
-    })
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Invalid URL format" },
+        { status: 400 }
+      );
+    }
+
+    await connectDB();
+
+    // Map the content type to the correct asset type
+    const assetType = contentTypeMap[contentType];
+    if (!assetType) {
+      return NextResponse.json(
+        { error: "Invalid content type" },
+        { status: 400 }
+      );
+    }
+
+    // Create the asset record
+    const asset = await Asset.create({
+      name,
+      type: assetType,
+      url,
+      size: 0, // URL assets don't have a file size
+      userId: session.user.id,
+    });
+
+    return NextResponse.json(asset);
   } catch (error) {
-    console.error("Error creating URL asset:", error)
-    return NextResponse.json({ error: "Failed to create URL asset" }, { status: 500 })
+    console.error("[URL_ASSET_CREATE_ERROR]", error);
+    return NextResponse.json(
+      { error: "Failed to create URL asset" },
+      { status: 500 }
+    );
   }
 }

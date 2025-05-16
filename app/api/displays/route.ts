@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/lib/db";
 import Display from "@/models/Display";
+import Playlist from "@/models/Playlist";
 
 // GET /api/displays - Get all displays for the user
 export async function GET() {

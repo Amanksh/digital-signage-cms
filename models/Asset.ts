@@ -19,7 +19,6 @@ const assetSchema = new mongoose.Schema(
     duration: Number,
     size: {
       type: Number,
-      required: true,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
