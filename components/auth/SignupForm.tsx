@@ -48,6 +48,7 @@ export default function SignupForm() {
         } else {
           throw new Error(error);
         }
+        return;
       }
 
       toast.success("Account created successfully");

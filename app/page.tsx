@@ -10,7 +10,7 @@ export default function Home() {
         <div className="container flex h-16 mx-auto items-center justify-between">
           <div className="flex items-center gap-2 font-bold">
             <Monitor className="h-5 w-5" />
-            <span>DigitalBoard</span>
+            <span>Orion LED</span>
           </div>
           <nav className="hidden gap-6 md:flex">
             <Link href="#features" className="text-sm font-medium">

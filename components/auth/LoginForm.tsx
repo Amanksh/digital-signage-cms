@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -12,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { toast } from "sonner";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -32,7 +32,6 @@ export default function LoginForm() {
         password,
         redirect: false,
       });
-      console.log("result", result);
       if (!result?.ok) {
         // Check if the user exists
         const userExists = await fetch(
@@ -42,6 +41,7 @@ export default function LoginForm() {
         const { exists } = await userExists.json();
 
         if (!exists) {
+          console.log("user does not exist");
           toast.error(
             "No account found with this email. Please sign up first."
           );
