@@ -43,16 +43,21 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, items } = body;
+    const { name, items, description } = body;
 
     if (!name) {
       return new NextResponse("Name is required", { status: 400 });
+    }
+
+    if (!description) {
+      return new NextResponse("Description is required", { status: 400 });
     }
 
     await connectDB();
 
     const playlist = await Playlist.create({
       name,
+      description,
       items,
       userId: session.user.id,
     });
