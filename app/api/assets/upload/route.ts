@@ -25,9 +25,9 @@ export async function POST(request: Request) {
     await connectDB();
 
     try {
-      // Generate a unique key for the file in S3
-      const key = generateS3Key(file, session.user.id);
-
+      // Generate a unique key for the file in S3 using user's email
+      const key = generateS3Key(file, session.user.email!);
+      console.log("key", key);
       // Upload file to S3
       const url = await uploadToS3(file, key);
 

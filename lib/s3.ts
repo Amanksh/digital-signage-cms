@@ -54,8 +54,9 @@ export async function uploadToS3(file: File, key: string) {
   }
 }
 
-export function generateS3Key(file: File, userId: string) {
-  const timestamp = Date.now();
-  const extension = file.name.split(".").pop();
-  return `${userId}/${timestamp}-${file.name}`;
+export function generateS3Key(file: File, userEmail: string) {
+  // Sanitize the email to use as folder name
+  const folderName = userEmail.replace(/[^a-zA-Z0-9]/g, "-");
+  // Use just the file name without timestamp
+  return `${folderName}/${file.name}`;
 }

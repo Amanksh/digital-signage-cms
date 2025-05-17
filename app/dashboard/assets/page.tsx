@@ -25,7 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
 type Asset = {
-  id: string;
+  _id: string;
   name: string;
   type: "IMAGE" | "VIDEO" | "HTML" | "URL";
   url: string;
@@ -141,11 +141,11 @@ export default function AssetsPage() {
             ) : filteredAssets.length === 0 ? (
               <div>No assets found</div>
             ) : (
-              filteredAssets.map((asset, idx) => (
+              filteredAssets.map((asset) => (
                 <AssetCard
-                  key={idx}
+                  key={asset._id}
                   asset={asset}
-                  onDelete={() => handleDelete(asset.id)}
+                  onDelete={() => handleDelete(asset._id)}
                 />
               ))
             )}
@@ -157,9 +157,9 @@ export default function AssetsPage() {
               .filter((asset) => asset.type === "IMAGE")
               .map((asset) => (
                 <AssetCard
-                  key={asset.id}
+                  key={asset._id}
                   asset={asset}
-                  onDelete={() => handleDelete(asset.id)}
+                  onDelete={() => handleDelete(asset._id)}
                 />
               ))}
           </div>
@@ -170,9 +170,9 @@ export default function AssetsPage() {
               .filter((asset) => asset.type === "VIDEO")
               .map((asset) => (
                 <AssetCard
-                  key={asset.id}
+                  key={asset._id}
                   asset={asset}
-                  onDelete={() => handleDelete(asset.id)}
+                  onDelete={() => handleDelete(asset._id)}
                 />
               ))}
           </div>
@@ -183,9 +183,9 @@ export default function AssetsPage() {
               .filter((asset) => asset.type === "HTML" || asset.type === "URL")
               .map((asset) => (
                 <AssetCard
-                  key={asset.id}
+                  key={asset._id}
                   asset={asset}
-                  onDelete={() => handleDelete(asset.id)}
+                  onDelete={() => handleDelete(asset._id)}
                 />
               ))}
           </div>
