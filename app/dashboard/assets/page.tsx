@@ -229,13 +229,13 @@ function AssetCard({
       case "IMAGE":
         return asset.url;
       case "VIDEO":
-        return "/video-placeholder.svg";
+        return asset.url;
       case "HTML":
         return "/html-placeholder.svg";
       case "URL":
-        return "/url-placeholder.svg";
+        return asset.url;
       default:
-        return "/placeholder.svg";
+        return asset.url;
     }
   };
 
@@ -271,7 +271,7 @@ function AssetCard({
                 <span className="sr-only">More options</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent className="bg-background-panel" align="end">
               <DropdownMenuItem>Edit</DropdownMenuItem>
               <DropdownMenuItem>Preview</DropdownMenuItem>
               <DropdownMenuItem>Add to playlist</DropdownMenuItem>
