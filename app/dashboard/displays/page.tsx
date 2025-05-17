@@ -202,7 +202,10 @@ export default function DisplaysPage() {
           <Card key={display._id}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                {display.name}
+                <div className="flex items-center gap-2">
+                  <Monitor />
+                  {display.name}
+                </div>
               </CardTitle>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

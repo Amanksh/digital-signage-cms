@@ -275,7 +275,7 @@ function PlaylistCard({
                 <span className="sr-only">More options</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent className="bg-background-panel" align="end">
               <DropdownMenuItem onClick={handlePreview}>
                 <Play className="mr-2 h-4 w-4" />
                 Preview
@@ -286,8 +286,7 @@ function PlaylistCard({
                   Edit
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>Duplicate</DropdownMenuItem>
-              <DropdownMenuItem>Assign to display</DropdownMenuItem>
+
               <DropdownMenuItem
                 className="text-destructive"
                 onClick={() => onDelete(playlist._id)}
