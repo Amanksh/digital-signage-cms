@@ -49,10 +49,6 @@ export async function POST(request: Request) {
       return new NextResponse("Name is required", { status: 400 });
     }
 
-    if (!description) {
-      return new NextResponse("Description is required", { status: 400 });
-    }
-
     await connectDB();
 
     const playlist = await Playlist.create({

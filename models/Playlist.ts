@@ -24,7 +24,7 @@ export interface IPlaylist extends Document {
 const PlaylistSchema = new Schema<IPlaylist>(
   {
     name: { type: String, required: true },
-    description: { type: String, required: true },
+    description: { type: String },
     userId: { type: String, required: true },
     status: {
       type: String,

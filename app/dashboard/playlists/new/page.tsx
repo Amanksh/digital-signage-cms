@@ -88,7 +88,7 @@ export default function NewPlaylistPage() {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
 
-    if (!name || !description) {
+    if (!name) {
       toast({
         title: "Missing fields",
         description: "Please fill in all required fields.",
@@ -212,12 +212,11 @@ export default function NewPlaylistPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Description (optional)</Label>
               <Textarea
                 id="description"
                 name="description"
                 placeholder="Enter playlist description"
-                required
               />
             </div>
 
