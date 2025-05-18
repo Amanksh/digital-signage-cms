@@ -252,9 +252,6 @@ function AssetCard({
             <Button size="sm" variant="secondary">
               Preview
             </Button>
-            <Button size="sm" variant="secondary">
-              Edit
-            </Button>
           </div>
         </div>
       </div>

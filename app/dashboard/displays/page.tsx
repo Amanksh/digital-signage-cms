@@ -213,7 +213,10 @@ export default function DisplaysPage() {
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent
+                  className="bg-background-panel"
+                  align="end"
+                >
                   <DropdownMenuItem
                     onClick={() =>
                       router.push(`/dashboard/displays/${display._id}`)

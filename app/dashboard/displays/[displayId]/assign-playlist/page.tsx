@@ -169,7 +169,7 @@ export default function AssignPlaylistPage({
                       <SelectValue placeholder="Select a playlist" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="bg-background-panel">
                     <SelectItem value="none">None</SelectItem>
                     {playlists.map((playlist) => (
                       <SelectItem key={playlist._id} value={playlist._id}>
