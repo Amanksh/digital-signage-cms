@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/lib/db";
 import Asset from "@/models/Asset";
-import { uploadToS3, generateS3Key } from "@/lib/s3";
+import { getSignedUploadUrl, generateS3Key } from "@/lib/s3";
 
 export async function POST(request: Request) {
   try {
@@ -27,20 +27,20 @@ export async function POST(request: Request) {
     try {
       // Generate a unique key for the file in S3 using user's email
       const key = generateS3Key(file, session.user.email!);
-      console.log("key", key);
-      // Upload file to S3
-      const url = await uploadToS3(file, key);
+
+      // Get signed URL for direct upload
+      const { signedUrl, publicUrl } = await getSignedUploadUrl(file, key);
 
       // Create the asset record with the S3 URL
       const asset = await Asset.create({
         name,
         type,
-        url,
+        url: publicUrl,
         size: file.size,
         userId: session.user.id,
       });
 
-      return NextResponse.json(asset);
+      return NextResponse.json({ asset, signedUrl });
     } catch (uploadError) {
       console.error("[S3_UPLOAD_ERROR]", uploadError);
       return new NextResponse(

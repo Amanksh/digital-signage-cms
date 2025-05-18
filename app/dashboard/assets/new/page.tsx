@@ -123,6 +123,7 @@ export default function NewAssetPage() {
     setIsUploading(true);
 
     try {
+      // First, get the signed URL
       const response = await fetch("/api/assets/upload", {
         method: "POST",
         body: formData,
@@ -133,7 +134,20 @@ export default function NewAssetPage() {
         throw new Error(error);
       }
 
-      const asset = await response.json();
+      const { asset, signedUrl } = await response.json();
+
+      // Upload directly to S3
+      const uploadResponse = await fetch(signedUrl, {
+        method: "PUT",
+        body: selectedFile,
+        headers: {
+          "Content-Type": selectedFile.type,
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload file to S3");
+      }
 
       toast({
         title: "Asset uploaded successfully",

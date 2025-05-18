@@ -18,7 +18,7 @@ const s3Client = new S3Client({
   },
 });
 
-export async function uploadToS3(file: File, key: string) {
+export async function getSignedUploadUrl(file: File, key: string) {
   try {
     const command = new PutObjectCommand({
       Bucket: process.env.AWS_BUCKET_NAME!,
@@ -30,26 +30,14 @@ export async function uploadToS3(file: File, key: string) {
       expiresIn: 3600,
     });
 
-    // Upload the file using the signed URL
-    const upload = await fetch(signedUrl, {
-      method: "PUT",
-      body: file,
-      headers: {
-        "Content-Type": file.type,
-      },
-    });
-
-    if (!upload.ok) {
-      const errorText = await upload.text();
-      throw new Error(`Failed to upload file to S3: ${errorText}`);
-    }
-
-    // Return the public URL
-    return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.REGION}.amazonaws.com/${key}`;
+    return {
+      signedUrl,
+      publicUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.REGION}.amazonaws.com/${key}`,
+    };
   } catch (error) {
-    console.error("[S3_UPLOAD_ERROR]", error);
+    console.error("[S3_SIGNED_URL_ERROR]", error);
     throw new Error(
-      error instanceof Error ? error.message : "Failed to upload file to S3"
+      error instanceof Error ? error.message : "Failed to get signed URL"
     );
   }
 }
