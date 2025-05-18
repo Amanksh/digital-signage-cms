@@ -229,11 +229,11 @@ function AssetCard({
       case "IMAGE":
         return asset.url;
       case "VIDEO":
-        return asset.url;
+        return "/video.webp";
       case "HTML":
         return "/html-placeholder.svg";
       case "URL":
-        return asset.url;
+        return "/url.jpg";
       default:
         return asset.url;
     }
