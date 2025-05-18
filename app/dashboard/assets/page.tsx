@@ -49,6 +49,7 @@ export default function AssetsPage() {
         throw new Error("Failed to fetch assets");
       }
       const data = await response.json();
+      console.log("data", data);
       setAssets(data);
     } catch (error) {
       console.error("Error fetching assets:", error);
@@ -202,6 +203,7 @@ function AssetCard({
   asset: Asset;
   onDelete: () => void;
 }) {
+  console.log(asset);
   const getAssetIcon = (type: string) => {
     switch (type) {
       case "IMAGE":

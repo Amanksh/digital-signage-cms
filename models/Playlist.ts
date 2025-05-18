@@ -33,7 +33,17 @@ const PlaylistSchema = new Schema<IPlaylist>(
     },
     items: [
       {
-        assetId: { type: Schema.Types.ObjectId, ref: "Asset", required: true },
+        assetId: {
+          type: Schema.Types.ObjectId,
+          ref: "Asset",
+          required: true,
+          validate: {
+            validator: function (v: any) {
+              return mongoose.Types.ObjectId.isValid(v);
+            },
+            message: (props) => `${props.value} is not a valid ObjectId!`,
+          },
+        },
         duration: { type: Number, required: true },
         order: { type: Number, required: true },
       },
