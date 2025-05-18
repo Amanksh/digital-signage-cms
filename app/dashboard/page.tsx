@@ -12,10 +12,26 @@ import {
 } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 
+interface Playlist {
+  _id: string;
+  name: string;
+  description?: string;
+  createdAt: string;
+}
+
+interface Asset {
+  _id: string;
+  name: string;
+  type: string;
+  createdAt: string;
+}
+
 export default function DashboardPage() {
   const [numAssets, setNumAssets] = useState(0);
   const [numPlaylists, setNumPlaylists] = useState(0);
   const [numDisplays, setNumDisplays] = useState(0);
+  const [recentPlaylists, setRecentPlaylists] = useState<Playlist[]>([]);
+  const [recentAssets, setRecentAssets] = useState<Asset[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -25,11 +41,13 @@ export default function DashboardPage() {
         const assetsRes = await fetch("/api/assets");
         const assets = await assetsRes.json();
         setNumAssets(assets.length);
+        setRecentAssets(assets.slice(0, 4)); // Get 4 most recent assets
 
         // Fetch playlists
         const playlistsRes = await fetch("/api/playlists");
         const playlists = await playlistsRes.json();
         setNumPlaylists(playlists.length);
+        setRecentPlaylists(playlists.slice(0, 4)); // Get 4 most recent playlists
 
         // Fetch displays
         const displaysRes = await fetch("/api/displays");
@@ -114,95 +132,79 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Your recent actions and updates</CardDescription>
+            <CardTitle>Recent Playlists</CardTitle>
+            <CardDescription>
+              Your most recently created playlists
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                {
-                  title: "New asset uploaded",
-                  description: "You uploaded 'Summer Promotion.mp4'",
-                  time: "2 hours ago",
-                },
-                {
-                  title: "Playlist updated",
-                  description: "You updated 'Main Lobby Display' playlist",
-                  time: "Yesterday",
-                },
-                {
-                  title: "Display connected",
-                  description: "New display 'Reception Area' connected",
-                  time: "2 days ago",
-                },
-                {
-                  title: "Asset deleted",
-                  description: "You deleted 'Old Promotion.jpg'",
-                  time: "3 days ago",
-                },
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-4 rounded-lg border p-3"
-                >
-                  <div className="flex-1 space-y-1">
-                    <p className="font-medium leading-none">{item.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {item.description}
-                    </p>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {item.time}
-                  </div>
+              {isLoading ? (
+                <div className="text-center text-muted-foreground">
+                  Loading...
                 </div>
-              ))}
+              ) : recentPlaylists.length === 0 ? (
+                <div className="text-center text-muted-foreground">
+                  No playlists found
+                </div>
+              ) : (
+                recentPlaylists.map((playlist) => (
+                  <div
+                    key={playlist._id}
+                    className="flex items-start gap-4 rounded-lg border p-3"
+                  >
+                    <div className="flex-1 space-y-1">
+                      <p className="font-medium leading-none">
+                        {playlist.name}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {playlist.description || "No description"}
+                      </p>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(playlist.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
         <Card className="col-span-3">
           <CardHeader>
-            <CardTitle>Popular Assets</CardTitle>
+            <CardTitle>Recent Assets</CardTitle>
             <CardDescription>
-              Your most viewed assets this month
+              Your most recently uploaded assets
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                {
-                  name: "Summer Promotion.mp4",
-                  type: "Video",
-                  views: 423,
-                },
-                {
-                  name: "New Product Launch.jpg",
-                  type: "Image",
-                  views: 352,
-                },
-                {
-                  name: "Company News.html",
-                  type: "HTML",
-                  views: 289,
-                },
-                {
-                  name: "Weekly Schedule.jpg",
-                  type: "Image",
-                  views: 198,
-                },
-              ].map((asset, index) => (
-                <div key={index} className="flex items-center gap-4">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
-                    <FileImage className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <p className="font-medium leading-none">{asset.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {asset.type}
-                    </p>
-                  </div>
-                  <div className="text-sm font-medium">{asset.views} views</div>
+              {isLoading ? (
+                <div className="text-center text-muted-foreground">
+                  Loading...
                 </div>
-              ))}
+              ) : recentAssets.length === 0 ? (
+                <div className="text-center text-muted-foreground">
+                  No assets found
+                </div>
+              ) : (
+                recentAssets.map((asset) => (
+                  <div key={asset._id} className="flex items-center gap-4">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
+                      <FileImage className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="font-medium leading-none">{asset.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {asset.type}
+                      </p>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(asset.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
