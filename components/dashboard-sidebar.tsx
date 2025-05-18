@@ -143,15 +143,13 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
                   tooltip="Logout"
                   className="group text-text-secondary hover:text-white hover:bg-error transition-colors duration-200"
                 >
-                  <button
-                    onClick={() =>
-                      signOut({ callbackUrl: window.location.origin })
-                    }
+                  <Link
+                    href={"/"}
                     className="flex  w-full items-center gap-3 px-6 py-3"
                   >
                     <LogOut className="h-5 w-5 text-text-secondary group-hover:text-primary transition-colors duration-200" />
                     <span className="text-base">Logout</span>
-                  </button>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
