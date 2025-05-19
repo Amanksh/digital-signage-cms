@@ -14,6 +14,8 @@ export async function GET() {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    console.log("session", session);
+
     await connectDB();
 
     const displays = await Display.find({ userId: session.user.id })
@@ -46,10 +48,6 @@ export async function POST(request: Request) {
     await connectDB();
 
     // Check if deviceId already exists
-    const existingDisplay = await Display.findOne({ deviceId });
-    if (existingDisplay) {
-      return new NextResponse("Device ID already exists", { status: 400 });
-    }
 
     const display = await Display.create({
       name,
