@@ -80,11 +80,26 @@ export default function ProfilePage() {
   async function onProfileSubmit(data: ProfileFormValues) {
     setIsLoading(true);
     try {
-      // TODO: Implement profile update
-      console.log(data);
+      const response = await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: data.name,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error);
+      }
+
       toast.success("Profile updated successfully");
     } catch (error) {
-      toast.error("Failed to update profile");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update profile"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -93,12 +108,28 @@ export default function ProfilePage() {
   async function onPasswordSubmit(data: PasswordFormValues) {
     setIsPasswordLoading(true);
     try {
-      // TODO: Implement password update
-      console.log(data);
+      const response = await fetch("/api/user/password", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error);
+      }
+
       toast.success("Password updated successfully");
       passwordForm.reset();
     } catch (error) {
-      toast.error("Failed to update password");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update password"
+      );
     } finally {
       setIsPasswordLoading(false);
     }
@@ -166,7 +197,11 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter your email" {...field} />
+                        <Input
+                          placeholder="Enter your email"
+                          {...field}
+                          disabled
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
