@@ -247,7 +247,7 @@ function PlaylistCard({
               <Play className="mr-1 h-3 w-3" />
               Preview
             </Button>
-            <Link href={`/dashboard/playlists/${playlist._id}/edit`}>
+            <Link href={`/dashboard/playlists/${playlist._id ?? ""}/edit`}>
               <Button size="sm" variant="secondary">
                 <Edit className="mr-1 h-3 w-3" />
                 Edit
@@ -281,7 +281,7 @@ function PlaylistCard({
                 Preview
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/playlists/${playlist._id}/edit`}>
+                <Link href={`/dashboard/playlists/${playlist._id ?? ""}/edit`}>
                   <Edit className="mr-2 h-4 w-4" />
                   Edit
                 </Link>
