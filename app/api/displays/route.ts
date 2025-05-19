@@ -13,14 +13,11 @@ export async function GET() {
     if (!session?.user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-
-    console.log("session", session);
-
     await connectDB();
 
-    const displays = await Display.find({ userId: session.user.id })
-      .populate("playlistId")
-      .sort({ createdAt: -1 });
+    const displays = await Display.find({ userId: session.user.id }).populate(
+      "playlistId"
+    );
 
     return NextResponse.json(displays);
   } catch (error) {

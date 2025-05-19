@@ -89,7 +89,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
                     }`}
                   >
                     <Link
-                      href={route.href}
+                      href={route.href ?? ""}
                       className="flex items-center gap-3 px-6 py-3"
                     >
                       <route.icon
