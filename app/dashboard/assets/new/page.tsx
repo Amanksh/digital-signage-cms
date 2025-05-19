@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
+import { generateVideoThumbnail } from "@/lib/video";
 
 export default function NewAssetPage() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function NewAssetPage() {
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     if (!file) return;
 
@@ -42,8 +43,13 @@ export default function NewAssetPage() {
       };
       reader.readAsDataURL(file);
     } else if (file.type.startsWith("video/")) {
-      // For videos, we'll use a placeholder or the first frame
-      setFilePreview("/placeholder.svg?height=200&width=300");
+      try {
+        const thumbnail = await generateVideoThumbnail(file);
+        setFilePreview(thumbnail);
+      } catch (error) {
+        console.error("Error generating thumbnail:", error);
+        setFilePreview("/placeholder.svg?height=200&width=300");
+      }
     }
   };
 
@@ -52,7 +58,7 @@ export default function NewAssetPage() {
     e.stopPropagation();
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -70,7 +76,13 @@ export default function NewAssetPage() {
           };
           reader.readAsDataURL(file);
         } else {
-          setFilePreview("/placeholder.svg?height=200&width=300");
+          try {
+            const thumbnail = await generateVideoThumbnail(file);
+            setFilePreview(thumbnail);
+          } catch (error) {
+            console.error("Error generating thumbnail:", error);
+            setFilePreview("/placeholder.svg?height=200&width=300");
+          }
         }
       } else {
         toast({
@@ -119,6 +131,11 @@ export default function NewAssetPage() {
       : "URL";
 
     formData.append("type", type);
+
+    // If it's a video, add the thumbnail
+    if (type === "VIDEO" && filePreview) {
+      formData.append("thumbnail", filePreview);
+    }
 
     setIsUploading(true);
 

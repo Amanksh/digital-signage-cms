@@ -42,6 +42,7 @@ type Playlist = {
       name: string;
       type: string;
       url: string;
+      thumbnail: string;
     };
     duration: number;
     order: number;
@@ -227,7 +228,10 @@ function PlaylistCard({
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const thumbnail = playlist.items[0]?.assetId?.url || "/placeholder.svg";
+  const thumbnail =
+    playlist.items[0]?.assetId?.thumbnail ||
+    playlist.items[0]?.assetId?.url ||
+    "/placeholder.svg";
 
   const handlePreview = () => {
     router.push(`/dashboard/playlists/preview/${playlist._id}`);

@@ -38,6 +38,7 @@ type Asset = {
   name: string;
   type: string;
   url: string;
+  thumbnail: string;
 };
 
 type PlaylistItem = {
@@ -179,7 +180,20 @@ export default function NewPlaylistPage() {
         : [...prev.daysOfWeek, day],
     }));
   };
-
+  const getThumbnailUrl = (asset: Asset) => {
+    switch (asset.type) {
+      case "IMAGE":
+        return asset.url;
+      case "VIDEO":
+        return asset.thumbnail || "/video.webp";
+      case "HTML":
+        return "/html-placeholder.svg";
+      case "URL":
+        return "/url.jpg";
+      default:
+        return asset.url;
+    }
+  };
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
@@ -337,7 +351,7 @@ export default function NewPlaylistPage() {
                           onClick={() => addAsset(asset)}
                         >
                           <img
-                            src={asset.url}
+                            src={getThumbnailUrl(asset)}
                             alt={asset.name}
                             className="mb-2 h-24 w-full object-cover"
                           />

@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     const file = formData.get("file") as File;
     const name = formData.get("name") as string;
     const type = formData.get("type") as "IMAGE" | "VIDEO" | "HTML" | "URL";
+    const thumbnail = formData.get("thumbnail") as string;
 
     if (!file || !name || !type) {
       return new NextResponse("Missing required fields", { status: 400 });
@@ -31,11 +32,44 @@ export async function POST(request: Request) {
       // Get signed URL for direct upload
       const { signedUrl, publicUrl } = await getSignedUploadUrl(file, key);
 
+      // If it's a video and we have a thumbnail, upload it to S3
+      let thumbnailUrl = null;
+      if (type === "VIDEO" && thumbnail) {
+        const thumbnailKey = `${key}_thumb.jpg`;
+
+        // Convert base64 to Blob
+        const base64Data = thumbnail.split(",")[1];
+        const binaryData = Buffer.from(base64Data, "base64");
+        const thumbnailBlob = new Blob([binaryData], { type: "image/jpeg" });
+
+        const { signedUrl: thumbnailSignedUrl, publicUrl: thumbnailPublicUrl } =
+          await getSignedUploadUrl(
+            new File([thumbnailBlob], "thumbnail.jpg", { type: "image/jpeg" }),
+            thumbnailKey
+          );
+
+        // Upload thumbnail to S3
+        const thumbnailResponse = await fetch(thumbnailSignedUrl, {
+          method: "PUT",
+          body: thumbnailBlob,
+          headers: {
+            "Content-Type": "image/jpeg",
+          },
+        });
+
+        if (!thumbnailResponse.ok) {
+          throw new Error("Failed to upload thumbnail to S3");
+        }
+
+        thumbnailUrl = thumbnailPublicUrl;
+      }
+
       // Create the asset record with the S3 URL
       const asset = await Asset.create({
         name,
         type,
         url: publicUrl,
+        thumbnail: thumbnailUrl,
         size: file.size,
         userId: session.user.id,
       });

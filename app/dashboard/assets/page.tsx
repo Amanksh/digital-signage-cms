@@ -31,6 +31,7 @@ type Asset = {
   url: string;
   createdAt: string;
   size: number;
+  thumbnail?: string;
 };
 
 export default function AssetsPage() {
@@ -231,7 +232,7 @@ function AssetCard({
       case "IMAGE":
         return asset.url;
       case "VIDEO":
-        return "/video.webp";
+        return asset.thumbnail || "/video.webp";
       case "HTML":
         return "/html-placeholder.svg";
       case "URL":
