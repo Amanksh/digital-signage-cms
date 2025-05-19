@@ -15,8 +15,8 @@ importers:
         specifier: ^3.810.0
         version: 3.810.0
       '@hello-pangea/dnd':
-        specifier: github:hello-pangea/dnd
-        version: https://codeload.github.com/hello-pangea/dnd/tar.gz/410173402853654f64436d116d68e3f89359d496(@types/react@19.1.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^18.0.0
+        version: 18.0.1(@types/react@19.1.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.10.0(react-hook-form@7.56.3(react@19.1.0))
@@ -386,9 +386,8 @@ packages:
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
 
-  '@hello-pangea/dnd@https://codeload.github.com/hello-pangea/dnd/tar.gz/410173402853654f64436d116d68e3f89359d496':
-    resolution: {tarball: https://codeload.github.com/hello-pangea/dnd/tar.gz/410173402853654f64436d116d68e3f89359d496}
-    version: 18.0.1
+  '@hello-pangea/dnd@18.0.1':
+    resolution: {integrity: sha512-xojVWG8s/TGrKT1fC8K2tIWeejJYTAeJuj36zM//yEm/ZrnZUSFGS15BpO+jGZT1ybWvyXmeDJwPYb4dhWlbZQ==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
@@ -3098,7 +3097,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.9': {}
 
-  '@hello-pangea/dnd@https://codeload.github.com/hello-pangea/dnd/tar.gz/410173402853654f64436d116d68e3f89359d496(@types/react@19.1.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+  '@hello-pangea/dnd@18.0.1(@types/react@19.1.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@babel/runtime': 7.27.1
       css-box-model: 1.2.1
