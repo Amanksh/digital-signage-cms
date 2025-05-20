@@ -45,6 +45,10 @@ export async function POST(request: Request) {
     await connectDB();
 
     // Check if deviceId already exists
+    const existingDisplay = await Display.findOne({ deviceId });
+    if (existingDisplay) {
+      return new NextResponse("Device ID already exists", { status: 400 });
+    }
 
     const display = await Display.create({
       name,
