@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/lib/db";
 import Asset from "@/models/Asset";
+import User from "@/models/User";
 
 // Map form content types to asset types
 const contentTypeMap: Record<string, "IMAGE" | "VIDEO" | "URL"> = {
@@ -13,10 +14,20 @@ const contentTypeMap: Record<string, "IMAGE" | "VIDEO" | "URL"> = {
 
 export async function POST(request: NextRequest) {
   try {
+    // First establish database connection
+    await connectDB();
+
+    // Then get the session
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    // Double check the user exists in database
+    const user = await User.findById(session.user.id);
+    if (!user) {
+      return new NextResponse("User not found", { status: 404 });
     }
 
     const formData = await request.formData();
@@ -40,8 +51,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    await connectDB();
 
     // Map the content type to the correct asset type
     const assetType = contentTypeMap[contentType];

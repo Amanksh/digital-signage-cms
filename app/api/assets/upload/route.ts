@@ -3,14 +3,25 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/lib/db";
 import Asset from "@/models/Asset";
+import User from "@/models/User";
 import { getSignedUploadUrl, generateS3Key } from "@/lib/s3";
 
 export async function POST(request: Request) {
   try {
+    // First establish database connection
+    await connectDB();
+
+    // Then get the session
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    // Double check the user exists in database
+    const user = await User.findById(session.user.id);
+    if (!user) {
+      return new NextResponse("User not found", { status: 404 });
     }
 
     const formData = await request.formData();
@@ -22,8 +33,6 @@ export async function POST(request: Request) {
     if (!file || !name || !type) {
       return new NextResponse("Missing required fields", { status: 400 });
     }
-
-    await connectDB();
 
     try {
       // Generate a unique key for the file in S3 using user's email
@@ -86,9 +95,6 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error("[ASSET_UPLOAD_ERROR]", error);
-    return new NextResponse(
-      error instanceof Error ? error.message : "Internal Error",
-      { status: 500 }
-    );
+    return new NextResponse("Internal Error", { status: 500 });
   }
 }

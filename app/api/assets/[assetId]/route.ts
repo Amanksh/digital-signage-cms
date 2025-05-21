@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/lib/db";
 import Asset from "@/models/Asset";
+import User from "@/models/User";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 export async function DELETE(
@@ -10,13 +11,21 @@ export async function DELETE(
   context: { params: { assetId: string } }
 ) {
   try {
+    // First establish database connection
+    await connectDB();
+
+    // Then get the session
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    await connectDB();
+    // Double check the user exists in database
+    const user = await User.findById(session.user.id);
+    if (!user) {
+      return new NextResponse("User not found", { status: 404 });
+    }
 
     const asset = await Asset.findOne({
       _id: context.params.assetId,
