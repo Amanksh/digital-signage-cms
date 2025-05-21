@@ -4,16 +4,26 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/lib/db";
 import Display from "@/models/Display";
 import Playlist from "@/models/Playlist";
+import User from "@/models/User";
 
 // GET /api/displays - Get all displays for the user
 export async function GET() {
   try {
+    // First establish database connection
+    await connectDB();
+
+    // Then get the session
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-    await connectDB();
+
+    // Double check the user exists in database
+    const user = await User.findById(session.user.id);
+    if (!user) {
+      return new NextResponse("User not found", { status: 404 });
+    }
 
     const displays = await Display.find({ userId: session.user.id }).populate(
       "playlistId"
