@@ -25,7 +25,7 @@ export async function GET() {
 
     const assets = await Asset.find({ userId: session.user.id })
       .sort({ createdAt: -1 })
-      .select("id name type url size createdAt thumbnail");
+      .select("id name type url size createdAt duration thumbnail");
 
     return NextResponse.json(assets);
   } catch (error) {

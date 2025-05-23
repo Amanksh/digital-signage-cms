@@ -79,6 +79,7 @@ export async function POST(request: Request) {
         type,
         url: publicUrl,
         thumbnail: thumbnailUrl,
+        duration: type === "VIDEO" ? 1 : 10,
         size: file.size,
         userId: session.user.id,
       });

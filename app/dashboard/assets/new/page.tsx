@@ -135,6 +135,7 @@ export default function NewAssetPage() {
     // If it's a video, add the thumbnail
     if (type === "VIDEO" && filePreview) {
       formData.append("thumbnail", filePreview);
+      formData.append("duration", "1");
     }
 
     setIsUploading(true);

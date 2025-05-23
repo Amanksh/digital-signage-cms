@@ -37,6 +37,7 @@ type Asset = {
   _id: string;
   name: string;
   type: string;
+  duration: number;
   url: string;
   thumbnail: string;
 };
@@ -148,7 +149,7 @@ export default function NewPlaylistPage() {
       ...selectedAssets,
       {
         assetId: asset._id,
-        duration: 10, // Default duration in seconds
+        duration: asset.duration || 10, // Default duration in seconds
         order: selectedAssets.length,
       },
     ]);
@@ -379,7 +380,7 @@ export default function NewPlaylistPage() {
                       className="flex items-center gap-4 rounded-md border p-4"
                     >
                       <img
-                        src={asset.url}
+                        src={asset.thumbnail}
                         alt={asset.name}
                         className="h-16 w-24 object-cover"
                       />
@@ -389,18 +390,25 @@ export default function NewPlaylistPage() {
                           {asset.type}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="relative flex items-center gap-2">
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4 text-muted-foreground" />
-                          <Input
-                            type="number"
-                            min="1"
-                            value={item.duration}
-                            onChange={(e) =>
-                              updateDuration(index, parseInt(e.target.value))
-                            }
-                            className="w-20"
-                          />
+                          <div className="">
+                            {asset.type === "VIDEO" && (
+                              <p className="absolute -top-6 text-orange-500 text-sm">
+                                1 Sec = Video duration
+                              </p>
+                            )}
+                            <Input
+                              type="number"
+                              min="1"
+                              value={item.duration}
+                              onChange={(e) =>
+                                updateDuration(index, parseInt(e.target.value))
+                              }
+                              className="w-20"
+                            />
+                          </div>
                           <span className="text-sm text-muted-foreground">
                             sec
                           </span>

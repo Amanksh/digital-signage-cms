@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
       name,
       type: assetType,
       url,
+      duration: contentType === "video" ? 1 : 10,
       size: 0, // URL assets don't have a file size
       userId: session.user.id,
     });
