@@ -75,6 +75,7 @@ interface PlaylistItem {
     _id: string;
     name: string;
     type: string;
+    duration: number;
     url: string;
   } | null;
   duration: number;
@@ -185,8 +186,9 @@ export default function EditPlaylistPage({
         name: asset.name,
         type: asset.type,
         url: asset.url,
+        duration: asset.duration,
       },
-      duration: 10,
+      duration: asset.duration,
       order: playlistItems.length,
     };
 
