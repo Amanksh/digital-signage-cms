@@ -141,7 +141,7 @@ export default function AssetsPage() {
             {filteredAssets.filter((asset) => asset.type === "VIDEO").length})
           </TabsTrigger>
           <TabsTrigger value="html">
-            HTML (
+            URL (
             {
               filteredAssets.filter(
                 (asset) => asset.type === "HTML" || asset.type === "URL"
