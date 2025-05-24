@@ -131,10 +131,24 @@ export default function AssetsPage() {
 
       <Tabs defaultValue="all">
         <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="images">Images</TabsTrigger>
-          <TabsTrigger value="videos">Videos</TabsTrigger>
-          <TabsTrigger value="html">HTML</TabsTrigger>
+          <TabsTrigger value="all">All ({filteredAssets.length})</TabsTrigger>
+          <TabsTrigger value="images">
+            Images (
+            {filteredAssets.filter((asset) => asset.type === "IMAGE").length})
+          </TabsTrigger>
+          <TabsTrigger value="videos">
+            Videos (
+            {filteredAssets.filter((asset) => asset.type === "VIDEO").length})
+          </TabsTrigger>
+          <TabsTrigger value="html">
+            HTML (
+            {
+              filteredAssets.filter(
+                (asset) => asset.type === "HTML" || asset.type === "URL"
+              ).length
+            }
+            )
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="all" className="mt-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

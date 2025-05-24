@@ -73,6 +73,7 @@ export default function PlaylistsPage() {
       const response = await fetch("/api/playlists");
       if (!response.ok) throw new Error("Failed to fetch playlists");
       const data = await response.json();
+      console.log(data);
       setPlaylists(data);
     } catch (error) {
       console.error("Error fetching playlists:", error);
@@ -231,7 +232,7 @@ function PlaylistCard({
   const thumbnail =
     playlist.items[0]?.assetId?.thumbnail ||
     playlist.items[0]?.assetId?.url ||
-    "/placeholder.svg";
+    "/playlist.png";
 
   const handlePreview = () => {
     router.push(`/dashboard/playlists/preview/${playlist._id}`);
