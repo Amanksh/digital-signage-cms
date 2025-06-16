@@ -15,6 +15,7 @@ import {
   Settings,
   User,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
@@ -70,8 +71,8 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
               href="/dashboard"
               className="flex items-center gap-3 font-semibold text-text-primary"
             >
-              <Monitor className="h-6 w-6" />
-              <span className="text-lg">Orion LED</span>
+             
+              <h1 className="text-2xl bg-gradient-to-r from-amber-500 to-pink-500 bg-clip-text text-transparent">Orion LED</h1>
               
             </Link>
           </SidebarHeader>
@@ -83,24 +84,24 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
                     asChild
                     isActive={pathname === route.href}
                     tooltip={route.name}
-                    className={`group transition-colors duration-200 ${
-                      pathname === route.href
-                        ? "text-primary bg-background-interface"
-                        : "text-text-secondary hover:text-primary hover:bg-background-interface"
+                    className={`group relative flex items-center transition-all duration-200 px-2 py-1.5 rounded-lg
+                      ${pathname === route.href
+                        ? "bg-primary/10 text-primary font-semibold shadow-sm border-l-4 border-primary"
+                        : "text-text-secondary hover:bg-primary/5 hover:text-primary"
                     }`}
                   >
                     <Link
                       href={route.href ?? ""}
-                      className="flex items-center gap-3 px-6 py-3"
+                      className="flex items-center gap-3 w-full px-4 py-2 rounded-lg transition-all duration-200"
                     >
                       <route.icon
                         className={`h-5 w-5 transition-colors duration-200 ${
                           pathname === route.href
                             ? "text-primary"
-                            : "text-text-secondary "
+                            : "text-text-secondary group-hover:text-primary"
                         }`}
                       />
-                      <span className="text-base">{route.name}</span>
+                      <span className={`text-base transition-all duration-200 ${pathname === route.href ? "font-bold" : "font-normal"}`}>{route.name}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

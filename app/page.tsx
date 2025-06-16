@@ -12,6 +12,7 @@ export default function Home() {
             {/* <Monitor className="h-5 w-5" />
             <span>Orion LED</span> */}
             {/* <Image src={"/logo.png"} width={80} height={50} alt="Orion LED" /> */}
+            <h1 className="text-2xl bg-gradient-to-r from-amber-500 to-pink-500 bg-clip-text text-transparent">Orion LED</h1>
           </div>
           <nav className="hidden gap-6 md:flex">
             <Link href="#features" className="text-sm font-bold">

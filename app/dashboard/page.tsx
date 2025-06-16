@@ -146,6 +146,7 @@ export default function DashboardPage() {
         </Card>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+       
         <Card className="col-span-4 transition duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
           <CardHeader>
             <CardTitle>Recent Playlists</CardTitle>
@@ -186,6 +187,8 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+       
+        
         <Card className="col-span-3 transition duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
           <CardHeader>
             <CardTitle>Recent Assets</CardTitle>
@@ -224,6 +227,7 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+        
       </div>
       
       <div className="grid gap-4">
