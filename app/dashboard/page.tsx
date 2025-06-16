@@ -104,7 +104,7 @@ export default function DashboardPage() {
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="transition duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Assets</CardTitle>
             <FileImage className="h-4 w-4 text-muted-foreground" />
@@ -116,7 +116,7 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground">Your media assets</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="transition duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Active Playlists
@@ -130,7 +130,7 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground">Your playlists</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="transition duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Connected Displays
@@ -146,7 +146,7 @@ export default function DashboardPage() {
         </Card>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+        <Card className="col-span-4 transition duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
           <CardHeader>
             <CardTitle>Recent Playlists</CardTitle>
             <CardDescription>
@@ -186,7 +186,7 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="col-span-3">
+        <Card className="col-span-3 transition duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
           <CardHeader>
             <CardTitle>Recent Assets</CardTitle>
             <CardDescription>
@@ -227,7 +227,7 @@ export default function DashboardPage() {
       </div>
       
       <div className="grid gap-4">
-        <Card>
+        <Card className="transition duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
