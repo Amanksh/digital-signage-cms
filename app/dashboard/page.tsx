@@ -26,12 +26,27 @@ interface Asset {
   createdAt: string;
 }
 
+interface Display {
+  _id: string;
+  name: string;
+  deviceId: string;
+  location?: string;
+  status: 'online' | 'offline' | 'error';
+  lastSeen: string;
+  playlistId?: {
+    _id: string;
+    name: string;
+  };
+  createdAt: string;
+}
+
 export default function DashboardPage() {
   const [numAssets, setNumAssets] = useState(0);
   const [numPlaylists, setNumPlaylists] = useState(0);
   const [numDisplays, setNumDisplays] = useState(0);
   const [recentPlaylists, setRecentPlaylists] = useState<Playlist[]>([]);
   const [recentAssets, setRecentAssets] = useState<Asset[]>([]);
+  const [displays, setDisplays] = useState<Display[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -53,6 +68,7 @@ export default function DashboardPage() {
         const displaysRes = await fetch("/api/displays");
         const displays = await displaysRes.json();
         setNumDisplays(displays.length);
+        setDisplays(displays);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -204,6 +220,81 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <div className="grid gap-4">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Displays</CardTitle>
+                <CardDescription>All your connected displays and their status</CardDescription>
+              </div>
+              <Link href="/dashboard/displays/new">
+                <Button size="sm" className="h-8 gap-1">
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Display</span>
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {isLoading ? (
+                <div className="text-center text-muted-foreground">
+                  Loading displays...
+                </div>
+              ) : displays.length === 0 ? (
+                <div className="text-center text-muted-foreground">
+                  No displays found. Add your first display to get started.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {displays.map((display) => {
+                    const isOnline = display.status === 'online';
+                    const lastSeen = new Date(display.lastSeen);
+                    const timeAgo = Math.floor((new Date().getTime() - lastSeen.getTime()) / (1000 * 60)); // minutes ago
+                    
+                    return (
+                      <div key={display._id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-4">
+                          <div className={`p-2 rounded-full ${isOnline ? 'bg-green-100' : 'bg-red-100'}`}>
+                            <Monitor className={`h-5 w-5 ${isOnline ? 'text-green-600' : 'text-red-600'}`} />
+                          </div>
+                          <div>
+                            <p className="font-medium">{display.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {display.deviceId} • {display.location || 'No location'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              isOnline ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {isOnline ? 'Online' : 'Offline'}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {isOnline ? 'Active now' : `Last seen ${timeAgo}m ago`}
+                            </span>
+                          </div>
+                          {display.playlistId ? (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Playing: {display.playlistId.name}
+                            </p>
+                          ) : (
+                            <p className="text-xs text-muted-foreground mt-1">No playlist assigned</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           </CardContent>

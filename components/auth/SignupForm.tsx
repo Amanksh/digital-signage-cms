@@ -63,7 +63,7 @@ export default function SignupForm() {
   };
 
   return (
-    <Card className="w-[350px]">
+    <Card className="w-[350px] bg-white">
       <CardHeader>
         <CardTitle>Sign Up</CardTitle>
         <CardDescription>Create a new account</CardDescription>

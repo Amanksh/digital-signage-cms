@@ -5,22 +5,22 @@ import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-r from-blue-200 to-cyan-200">
+      <header className="sticky top-0 z-50 w-full  shadow-lg  backdrop-blur">
         <div className="container flex h-16 mx-auto items-center justify-between">
           <div className="flex items-center gap-2 font-bold">
             {/* <Monitor className="h-5 w-5" />
             <span>Orion LED</span> */}
-            <Image src={"/logo.png"} width={80} height={50} alt="Orion LED" />
+            {/* <Image src={"/logo.png"} width={80} height={50} alt="Orion LED" /> */}
           </div>
           <nav className="hidden gap-6 md:flex">
-            <Link href="#features" className="text-sm font-medium">
+            <Link href="#features" className="text-sm font-bold">
               Features
             </Link>
-            <Link href="#pricing" className="text-sm font-medium">
+            <Link href="#pricing" className="text-sm font-bold">
               Pricing
             </Link>
-            <Link href="#about" className="text-sm font-medium">
+            <Link href="#about" className="text-sm font-bold">
               About
             </Link>
           </nav>

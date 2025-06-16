@@ -19,10 +19,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LoginForm from "@/components/auth/LoginForm";
-
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-slate-900 to-slate-700">
       <LoginForm />
     </div>
   );

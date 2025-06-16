@@ -11,6 +11,7 @@ export interface IDisplay extends Document {
   lastActive: Date;
   createdAt: Date;
   updatedAt: Date;
+  totalHours : number
 }
 
 const DisplaySchema = new Schema<IDisplay>(
@@ -27,6 +28,7 @@ const DisplaySchema = new Schema<IDisplay>(
     playlistId: { type: Schema.Types.ObjectId, ref: "Playlist" },
     userId: { type: String, required: true },
     lastActive: { type: Date, default: Date.now },
+    totalHours: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

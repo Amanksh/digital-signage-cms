@@ -65,13 +65,14 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
     <SidebarProvider defaultOpen>
       <div className="grid min-h-screen w-full md:grid-cols-[auto_1fr]">
         <Sidebar className="bg-background-panel border-r border-border">
-          <SidebarHeader className="flex h-16 items-center border-b border-border px-6">
+          <SidebarHeader className="flex mt-5 items-center border-b border-border px-6">
             <Link
               href="/dashboard"
               className="flex items-center gap-3 font-semibold text-text-primary"
             >
               <Monitor className="h-6 w-6" />
               <span className="text-lg">Orion LED</span>
+              
             </Link>
           </SidebarHeader>
           <SidebarContent className="mt-3">
