@@ -229,10 +229,17 @@ function PlaylistCard({
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const thumbnail =
-    playlist.items[0]?.assetId?.thumbnail ||
-    playlist.items[0]?.assetId?.url ||
-    "/playlist.png";
+  // Find the first image asset in the playlist items
+  const findImageAsset = () => {
+    const imageItem = playlist.items.find(item => 
+      item.assetId?.type?.startsWith('image/') || 
+      item.assetId?.url?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+    );
+    
+    return imageItem?.assetId?.thumbnail || imageItem?.assetId?.url || "/playlist.png";
+  };
+
+  const thumbnail = findImageAsset();
 
   const handlePreview = () => {
     router.push(`/dashboard/playlists/preview/${playlist._id}`);

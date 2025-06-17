@@ -266,9 +266,11 @@ function AssetCard({
         />
         <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity hover:opacity-100">
           <div className="flex h-full items-center justify-center gap-2">
-            <Button size="sm" variant="secondary">
-              Preview
-            </Button>
+            <Link href={asset.url} target="_blank" rel="noopener noreferrer">
+              <Button size="sm" variant="secondary">
+                Preview
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
