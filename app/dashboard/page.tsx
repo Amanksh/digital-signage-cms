@@ -32,7 +32,7 @@ interface Display {
   deviceId: string;
   location?: string;
   status: 'online' | 'offline' | 'error';
-  lastSeen: string;
+  lastActive: string;
   playlistId?: {
     _id: string;
     name: string;
@@ -259,19 +259,38 @@ export default function DashboardPage() {
               ) : (
                 <div className="space-y-3">
                   {displays.map((display) => {
-                    const lastSeen = new Date(display.lastSeen);
-                    const timeDiffMs = new Date().getTime() - lastSeen.getTime();
-                    const timeDiffMins = Math.floor(timeDiffMs / (1000 * 60));
-                    const isOnline = timeDiffMins <= 5; // Online if last active within 5 minutes
+                    // Safely handle missing or invalid lastActive
+                    let isOnline = false;
+                    let timeAgo = 'Never';
                     
-                    // Format time difference for display
-                    let timeAgo = '';
-                    if (!isOnline) {
-                      const hours = Math.floor(timeDiffMins / 60);
-                      const minutes = timeDiffMins % 60;
-                      timeAgo = hours > 0 
-                        ? `${hours}h ${minutes}m ago` 
-                        : `${minutes}m ago`;
+                    if (display.lastActive) {
+                      try {
+                        const lastActive = new Date(display.lastActive);
+                        if (!isNaN(lastActive.getTime())) {
+                          const timeDiffMs = Date.now() - lastActive.getTime();
+                          const timeDiffMins = Math.floor(timeDiffMs / (1000 * 60));
+                          isOnline = timeDiffMins <= 5; // Online if last active within 5 minutes
+                          
+                          // Format time difference for display
+                          if (!isOnline) {
+                            const hours = Math.floor(timeDiffMins / 60);
+                            const days = Math.floor(hours / 24);
+                            const minutes = timeDiffMins % 60;
+                            
+                            if (days > 0) {
+                              timeAgo = `${days}d ${hours % 24}h ago`;
+                            } else if (hours > 0) {
+                              timeAgo = `${hours}h ${minutes}m ago`;
+                            } else {
+                              timeAgo = `${minutes}m ago`;
+                            }
+                          } else {
+                            timeAgo = 'Just now';
+                          }
+                        }
+                      } catch (error) {
+                        console.error('Error processing lastActive:', error);
+                      }
                     }
                     
                     return (
