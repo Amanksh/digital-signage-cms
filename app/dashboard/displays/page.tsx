@@ -151,6 +151,29 @@ export default function DisplaysPage() {
       display.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const getDisplayStatus = (lastActive: string) => {
+    const lastSeen = new Date(lastActive);
+    const timeDiffMs = new Date().getTime() - lastSeen.getTime();
+    const timeDiffMins = Math.floor(timeDiffMs / (1000 * 60));
+    const isOnline = timeDiffMins <= 5; // Online if last active within 5 minutes
+    
+    // Format time difference for display
+    let timeAgo = '';
+    if (!isOnline) {
+      const hours = Math.floor(timeDiffMins / 60);
+      const minutes = timeDiffMins % 60;
+      timeAgo = hours > 0 
+        ? `${hours}h ${minutes}m ago` 
+        : `${minutes}m ago`;
+    }
+    
+    return {
+      isOnline,
+      status: isOnline ? 'online' : 'offline',
+      timeAgo: isOnline ? 'Active now' : `Last seen ${timeAgo}`
+    };
+  };
+
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case "online":
@@ -251,12 +274,17 @@ export default function DisplaysPage() {
                     Playlist: {display.playlistId?.name || "None"}
                   </p>
                 </div>
-                <div
-                  className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusBadgeClass(
-                    display.status
-                  )}`}
-                >
-                  {display.status}
+                <div className="flex flex-col items-end gap-1">
+                  <div
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusBadgeClass(
+                      getDisplayStatus(display.lastActive).status
+                    )}`}
+                  >
+                    {getDisplayStatus(display.lastActive).status}
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {getDisplayStatus(display.lastActive).timeAgo}
+                  </span>
                 </div>
               </div>
             </CardContent>

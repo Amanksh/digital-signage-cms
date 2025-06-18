@@ -259,9 +259,20 @@ export default function DashboardPage() {
               ) : (
                 <div className="space-y-3">
                   {displays.map((display) => {
-                    const isOnline = display.status === 'online';
                     const lastSeen = new Date(display.lastSeen);
-                    const timeAgo = Math.floor((new Date().getTime() - lastSeen.getTime()) / (1000 * 60)); // minutes ago
+                    const timeDiffMs = new Date().getTime() - lastSeen.getTime();
+                    const timeDiffMins = Math.floor(timeDiffMs / (1000 * 60));
+                    const isOnline = timeDiffMins <= 5; // Online if last active within 5 minutes
+                    
+                    // Format time difference for display
+                    let timeAgo = '';
+                    if (!isOnline) {
+                      const hours = Math.floor(timeDiffMins / 60);
+                      const minutes = timeDiffMins % 60;
+                      timeAgo = hours > 0 
+                        ? `${hours}h ${minutes}m ago` 
+                        : `${minutes}m ago`;
+                    }
                     
                     return (
                       <div key={display._id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -284,7 +295,7 @@ export default function DashboardPage() {
                               {isOnline ? 'Online' : 'Offline'}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              {isOnline ? 'Active now' : `Last seen ${timeAgo}m ago`}
+                              {isOnline ? 'Active now' : `Last seen ${timeAgo}`}
                             </span>
                           </div>
                           {display.playlistId ? (
