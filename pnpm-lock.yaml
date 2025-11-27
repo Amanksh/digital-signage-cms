@@ -177,6 +177,9 @@ importers:
         specifier: ^3.24.1
         version: 3.24.4
     devDependencies:
+      '@netlify/plugin-nextjs':
+        specifier: ^5.10.2
+        version: 5.15.0
       '@types/bcryptjs':
         specifier: ^3.0.0
         version: 3.0.0
@@ -526,6 +529,10 @@ packages:
 
   '@mongodb-js/saslprep@1.2.2':
     resolution: {integrity: sha512-EB0O3SCSNRUFk66iRCpI+cXzIjdswfCs7F6nOC3RAGJ7xr5YhaicvsRwJ9eyzYvYRlCSDUO/c7g4yNulxKC1WA==}
+
+  '@netlify/plugin-nextjs@5.15.0':
+    resolution: {integrity: sha512-UqBcAjA7zCvWpVgmYEW0j2y/ZiwQ5GCxnuxLVFI7PodHeQZCMpE9Ij3Jo5nCHLfUxZM7QknYCzCvTKW+cwnrjQ==}
+    engines: {node: '>=18.0.0'}
 
   '@next/env@15.2.4':
     resolution: {integrity: sha512-+SFtMgoiYP3WoSswuNmxJOCwi06TdWE733D+WPjpXIe4LXGULwEaofiiAy6kbS0+XjM5xF5n3lKuBwN2SnqD9g==}
@@ -3217,6 +3224,8 @@ snapshots:
   '@mongodb-js/saslprep@1.2.2':
     dependencies:
       sparse-bitfield: 3.0.3
+
+  '@netlify/plugin-nextjs@5.15.0': {}
 
   '@next/env@15.2.4': {}
 
