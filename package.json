@@ -67,6 +67,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.10.2",
     "@types/bcryptjs": "^3.0.0",
     "@types/node": "^22",
     "@types/react": "^19",
