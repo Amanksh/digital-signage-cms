@@ -14,6 +14,7 @@ import {
   PlayCircle,
   Settings,
   User,
+  Activity,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,11 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
       href: "/dashboard/analytics",
       icon: BarChart3,
     },
+    {
+      name: "Playback Reports",
+      href: "/dashboard/playback",
+      icon: Activity,
+    },
   ];
 
   return (
@@ -71,9 +77,10 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
               href="/dashboard"
               className="flex items-center gap-3 font-semibold text-text-primary"
             >
-             
+              <div className="bg-black p-3 rounded-lg">
+                <Image src={"/orion-logo.png"} width={48} height={48} alt="Orion LED" className="h-12 w-12" />
+              </div>
               <h1 className="text-2xl bg-gradient-to-r from-amber-500 to-pink-500 bg-clip-text text-transparent">Orion LED</h1>
-              
             </Link>
           </SidebarHeader>
           <SidebarContent className="mt-3">

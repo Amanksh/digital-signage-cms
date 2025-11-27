@@ -14,13 +14,13 @@ export async function GET() {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Double check the user exists in database
     const user = await User.findById(session.user.id);
     if (!user) {
-      return new NextResponse("User not found", { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const assets = await Asset.find({ userId: session.user.id })
@@ -30,6 +30,6 @@ export async function GET() {
     return NextResponse.json(assets);
   } catch (error) {
     console.error("[ASSETS_GET_ERROR]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }
 }

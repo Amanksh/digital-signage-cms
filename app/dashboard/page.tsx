@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BarChart3, FileImage, Monitor, PlayCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +42,7 @@ interface Display {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [numAssets, setNumAssets] = useState(0);
   const [numPlaylists, setNumPlaylists] = useState(0);
   const [numDisplays, setNumDisplays] = useState(0);
@@ -53,22 +55,73 @@ export default function DashboardPage() {
     const fetchData = async () => {
       try {
         // Fetch assets
-        const assetsRes = await fetch("/api/assets");
+        const assetsRes = await fetch("/api/assets", {
+          credentials: "include",
+        });
+        
+        if (!assetsRes.ok) {
+          if (assetsRes.status === 401) {
+            router.push("/login");
+            return;
+          }
+          throw new Error("Failed to fetch assets");
+        }
+        
         const assets = await assetsRes.json();
-        setNumAssets(assets.length);
-        setRecentAssets(assets.slice(0, 4)); // Get 4 most recent assets
+        // Ensure assets is an array
+        if (Array.isArray(assets)) {
+          setNumAssets(assets.length);
+          setRecentAssets(assets.slice(0, 4)); // Get 4 most recent assets
+        } else {
+          setNumAssets(0);
+          setRecentAssets([]);
+        }
 
         // Fetch playlists
-        const playlistsRes = await fetch("/api/playlists");
+        const playlistsRes = await fetch("/api/playlists", {
+          credentials: "include",
+        });
+        
+        if (!playlistsRes.ok) {
+          if (playlistsRes.status === 401) {
+            router.push("/login");
+            return;
+          }
+          throw new Error("Failed to fetch playlists");
+        }
+        
         const playlists = await playlistsRes.json();
-        setNumPlaylists(playlists.length);
-        setRecentPlaylists(playlists.slice(0, 4)); // Get 4 most recent playlists
+        // Ensure playlists is an array
+        if (Array.isArray(playlists)) {
+          setNumPlaylists(playlists.length);
+          setRecentPlaylists(playlists.slice(0, 4)); // Get 4 most recent playlists
+        } else {
+          setNumPlaylists(0);
+          setRecentPlaylists([]);
+        }
 
         // Fetch displays
-        const displaysRes = await fetch("/api/displays");
+        const displaysRes = await fetch("/api/displays", {
+          credentials: "include",
+        });
+        
+        if (!displaysRes.ok) {
+          if (displaysRes.status === 401) {
+            router.push("/login");
+            return;
+          }
+          throw new Error("Failed to fetch displays");
+        }
+        
         const displays = await displaysRes.json();
-        setNumDisplays(displays.length);
-        setDisplays(displays);
+        // Ensure displays is an array
+        if (Array.isArray(displays)) {
+          setNumDisplays(displays.length);
+          setDisplays(displays);
+        } else {
+          setNumDisplays(0);
+          setDisplays([]);
+        }
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -77,7 +130,7 @@ export default function DashboardPage() {
     };
 
     fetchData();
-  }, []);
+  }, [router]);
 
   return (
     <div className="space-y-6">
@@ -231,6 +284,80 @@ export default function DashboardPage() {
       </div>
       
       <div className="grid gap-4">
+        <Card className="transition duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Last Sync</CardTitle>
+                <CardDescription>
+                  Most recently active devices
+                </CardDescription>
+              </div>
+              <Link href="/dashboard/displays">
+                <Button size="sm" className="h-8 gap-1">
+                  <Monitor className="h-3.5 w-3.5" />
+                  <span>View All</span>
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="text-center text-muted-foreground">Loading last sync...</div>
+            ) : displays.length === 0 ? (
+              <div className="text-center text-muted-foreground">No displays found.</div>
+            ) : (
+              <div className="space-y-3">
+                {([...displays]
+                  .filter((d) => !!d.lastActive)
+                  .sort((a, b) => {
+                    const aTime = new Date(a.lastActive).getTime();
+                    const bTime = new Date(b.lastActive).getTime();
+                    return bTime - aTime;
+                  })
+                  .slice(0, 5)).map((display) => {
+                  const lastActiveDate = new Date(display.lastActive);
+                  const isValid = !isNaN(lastActiveDate.getTime());
+                  const diffMs = isValid ? Date.now() - lastActiveDate.getTime() : Number.POSITIVE_INFINITY;
+                  const diffMins = Math.floor(diffMs / (1000 * 60));
+                  const isOnline = isValid && diffMins <= 5;
+
+                  let when = 'Never';
+                  if (isValid) {
+                    if (diffMins < 1) when = 'Just now';
+                    else if (diffMins < 60) when = `${diffMins}m ago`;
+                    else {
+                      const hours = Math.floor(diffMins / 60);
+                      const days = Math.floor(hours / 24);
+                      if (days > 0) when = `${days}d ${hours % 24}h ago`;
+                      else when = `${hours}h ${diffMins % 60}m ago`;
+                    }
+                  }
+
+                  return (
+                    <div key={display._id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className={`p-2 rounded-full ${isOnline ? 'bg-green-100' : 'bg-red-100'}`}>
+                          <Monitor className={`h-5 w-5 ${isOnline ? 'text-green-600' : 'text-red-600'}`} />
+                        </div>
+                        <div>
+                          <p className="font-medium">{display.name}</p>
+                          <p className="text-sm text-muted-foreground">{display.deviceId} • {display.location || 'No location'}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isOnline ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          {isOnline ? 'Online' : 'Offline'}
+                        </span>
+                        <p className="text-xs text-muted-foreground mt-1">{isOnline ? 'Active now' : `Last seen ${when}`}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
         <Card className="transition duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary">
           <CardHeader>
             <div className="flex items-center justify-between">

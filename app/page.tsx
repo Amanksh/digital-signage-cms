@@ -9,17 +9,14 @@ export default function Home() {
       <header className="sticky top-0 z-50 w-full  shadow-lg  backdrop-blur">
         <div className="container flex h-16 mx-auto items-center justify-between">
           <div className="flex items-center gap-2 font-bold">
-            {/* <Monitor className="h-5 w-5" />
-            <span>Orion LED</span> */}
-            {/* <Image src={"/logo.png"} width={80} height={50} alt="Orion LED" /> */}
+            <div className="bg-black p-2 rounded-lg">
+              <Image src={"/orion-logo.png"} width={40} height={40} alt="Orion LED" className="h-10 w-10" />
+            </div>
             <h1 className="text-2xl bg-gradient-to-r from-amber-500 to-pink-500 bg-clip-text text-transparent">Orion LED</h1>
           </div>
           <nav className="hidden gap-6 md:flex">
             <Link href="#features" className="text-sm font-bold">
               Features
-            </Link>
-            <Link href="#pricing" className="text-sm font-bold">
-              Pricing
             </Link>
             <Link href="#about" className="text-sm font-bold">
               About
