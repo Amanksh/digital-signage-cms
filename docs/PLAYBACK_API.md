@@ -39,7 +39,16 @@ The Playback Analytics system allows Android players to send playback logs to th
 Receives playback logs from Android players and stores them in the database.
 
 #### Authentication
-Requires valid session authentication.
+Supports TWO authentication methods:
+1. **Session Auth** - For web dashboard users
+2. **API Key** - For backend-to-backend communication (recommended for Android integration)
+
+To use API Key auth, add header:
+```
+X-API-Key: your-api-key-here
+```
+
+Set the API key in your environment: `PLAYBACK_API_KEY=your-secret-key`
 
 #### Request
 
@@ -81,14 +90,16 @@ Requires valid session authentication.
 
 #### Field Validation
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| `device_id` | String | Yes | Non-empty string |
-| `asset_id` | String | Yes | Non-empty string |
-| `playlist_id` | String | Yes | Non-empty string |
-| `start_time` | String | Yes | Valid ISO 8601 date string |
-| `end_time` | String | Yes | Valid ISO 8601 date string, must be after start_time |
-| `duration` | Number | Yes | Non-negative number, must match time difference (±1s tolerance) |
+The API accepts multiple field name formats for Android compatibility:
+
+| Standard Field | Alternative Names | Type | Required | Validation |
+|----------------|-------------------|------|----------|------------|
+| `device_id` | `deviceId` | String | Yes | Non-empty string |
+| `asset_id` | `assetId` | String | Yes | Non-empty string |
+| `playlist_id` | `playlistId` | String | Yes | Non-empty string |
+| `start_time` | `played_at`, `startTime` | String | Yes | Valid ISO 8601 date string |
+| `end_time` | `ended_at`, `endTime` | String | Yes | Valid ISO 8601 date string, must be after start_time |
+| `duration` | - | Number | Optional | Auto-calculated if not provided |
 
 #### Response
 
@@ -271,6 +282,31 @@ GET /api/playback/report?playlist_id=morning_playlist&device_id=lobby_display&da
   "details": "Database query failed"
 }
 ```
+
+### 3. POST /api/playback/test
+
+Creates sample playback log entries for testing. Requires session authentication.
+
+#### Query Parameters
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `count` | Number | 5 | Number of test entries (max: 20) |
+
+#### Example
+```bash
+# Create 10 test entries
+POST /api/playback/test?count=10
+```
+
+### 4. GET /api/playback/test
+
+Returns recent playback logs for verification. Requires session authentication.
+
+### 5. DELETE /api/playback/test
+
+Clears all playback logs (use with caution!). Requires session authentication.
+
+---
 
 ## Usage Examples
 

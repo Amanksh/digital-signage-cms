@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/lib/db";
 import PlaybackLog from "@/models/PlaybackLog";
 
+// Standard field names used internally
 interface PlaybackLogData {
   device_id: string;
   asset_id: string;
@@ -13,11 +14,61 @@ interface PlaybackLogData {
   duration: number;
 }
 
+// Android player may send different field names
+interface AndroidPlaybackLog {
+  device_id?: string;
+  deviceId?: string;
+  asset_id?: string;
+  assetId?: string;
+  playlist_id?: string;
+  playlistId?: string;
+  start_time?: string;
+  played_at?: string;
+  startTime?: string;
+  end_time?: string;
+  ended_at?: string;
+  endTime?: string;
+  duration?: number;
+}
+
+/**
+ * Maps Android/alternative field names to standard field names
+ */
+function normalizeLogFields(log: AndroidPlaybackLog): PlaybackLogData {
+  return {
+    device_id: log.device_id || log.deviceId || '',
+    asset_id: log.asset_id || log.assetId || '',
+    playlist_id: log.playlist_id || log.playlistId || '',
+    start_time: log.start_time || log.played_at || log.startTime || '',
+    end_time: log.end_time || log.ended_at || log.endTime || '',
+    duration: log.duration ?? -1,
+  };
+}
+
+/**
+ * Validates API key authentication for backend-to-backend communication
+ */
+function validateApiKey(request: NextRequest): boolean {
+  const apiKey = request.headers.get("X-API-Key") || request.headers.get("x-api-key");
+  const validApiKey = process.env.PLAYBACK_API_KEY;
+  
+  if (!validApiKey) {
+    console.warn("[PLAYBACK_LOG] PLAYBACK_API_KEY not configured");
+    return false;
+  }
+  
+  return apiKey === validApiKey;
+}
+
 /**
  * POST /api/playback/log
  * 
- * Receives playback logs from Android players and stores them in the database.
+ * Receives playback logs from Android players (via backend) and stores them in the database.
  * Supports both single log objects and arrays of log objects for bulk insert.
+ * 
+ * Authentication:
+ * - Option 1: Session auth (for web dashboard)
+ * - Option 2: API Key via X-API-Key header (for backend integration)
  * 
  * Request Body:
  * - Single object: { device_id, asset_id, playlist_id, start_time, end_time, duration }
@@ -32,10 +83,15 @@ export async function POST(request: NextRequest) {
     // Connect to database
     await connectDB();
 
-    // Authentication check
+    // Authentication check - support both session and API key
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const hasValidApiKey = validateApiKey(request);
+    
+    if (!session?.user?.id && !hasValidApiKey) {
+      return NextResponse.json(
+        { error: "Unauthorized. Provide valid session or X-API-Key header." }, 
+        { status: 401 }
+      );
     }
 
     // Parse request body
@@ -49,8 +105,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Normalize input to array
-    const logs: PlaybackLogData[] = Array.isArray(body) ? body : [body];
+    // Normalize input to array and map field names
+    const rawLogs: AndroidPlaybackLog[] = Array.isArray(body) ? body : [body];
+    const logs: PlaybackLogData[] = rawLogs.map(normalizeLogFields);
 
     if (logs.length === 0) {
       return NextResponse.json(
@@ -83,11 +140,7 @@ export async function POST(request: NextRequest) {
       if (!log.end_time || typeof log.end_time !== 'string') {
         logErrors.push('end_time is required and must be a string');
       }
-      if (typeof log.duration !== 'number' || log.duration < 0) {
-        logErrors.push('duration is required and must be a non-negative number');
-      }
-
-      // Date validation
+      // Date validation (do this first to calculate duration if needed)
       let startTime, endTime;
       if (log.start_time) {
         startTime = new Date(log.start_time);
@@ -107,14 +160,29 @@ export async function POST(request: NextRequest) {
         logErrors.push('end_time must be after start_time');
       }
 
-      // Duration validation (allow 1 second tolerance)
-      if (startTime && endTime && typeof log.duration === 'number') {
+      // Duration handling - auto-calculate if not provided or invalid
+      let finalDuration = log.duration;
+      if (startTime && endTime) {
         const calculatedDuration = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
-        const tolerance = 1;
-        if (Math.abs(log.duration - calculatedDuration) > tolerance) {
-          logErrors.push(`duration (${log.duration}) does not match calculated duration (${calculatedDuration})`);
+        
+        if (typeof finalDuration !== 'number' || finalDuration < 0) {
+          // Auto-calculate duration if not provided
+          finalDuration = calculatedDuration;
+        } else {
+          // Validate provided duration (allow 2 second tolerance)
+          const tolerance = 2;
+          if (Math.abs(finalDuration - calculatedDuration) > tolerance) {
+            // Use calculated duration instead of failing
+            console.warn(`[PLAYBACK_LOG] Duration mismatch: provided ${finalDuration}, calculated ${calculatedDuration}. Using calculated.`);
+            finalDuration = calculatedDuration;
+          }
         }
+      } else if (typeof finalDuration !== 'number' || finalDuration < 0) {
+        logErrors.push('duration is required when start_time/end_time are invalid');
       }
+      
+      // Store the final duration back
+      log.duration = finalDuration;
 
       if (logErrors.length > 0) {
         errors.push({
