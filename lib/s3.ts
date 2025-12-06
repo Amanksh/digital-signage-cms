@@ -18,7 +18,14 @@ const s3Client = new S3Client({
   },
 });
 
-export async function getSignedUploadUrl(file: File, key: string) {
+// FileInfo interface to avoid using browser's File API in Node.js
+interface FileInfo {
+  name: string;
+  type: string;
+  size?: number;
+}
+
+export async function getSignedUploadUrl(file: FileInfo, key: string) {
   try {
     const command = new PutObjectCommand({
       Bucket: process.env.AWS_BUCKET_NAME!,
@@ -42,7 +49,7 @@ export async function getSignedUploadUrl(file: File, key: string) {
   }
 }
 
-export function generateS3Key(file: File, userEmail: string) {
+export function generateS3Key(file: FileInfo, userEmail: string) {
   // Sanitize the email to use as folder name
   const folderName = userEmail.replace(/[^a-zA-Z0-9]/g, "-");
   // Use just the file name without timestamp

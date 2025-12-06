@@ -92,11 +92,14 @@ export async function POST(request: Request) {
         const binaryData = Buffer.from(base64Data, "base64");
         const thumbnailBlob = new Blob([binaryData], { type: "image/jpeg" });
 
+        // Use a simple object instead of File (File is not available in Node.js)
+        const thumbnailFileInfo = {
+          name: "thumbnail.jpg",
+          type: "image/jpeg",
+        };
+
         const { signedUrl: thumbnailSignedUrl, publicUrl: thumbnailPublicUrl } =
-          await getSignedUploadUrl(
-            new File([thumbnailBlob], "thumbnail.jpg", { type: "image/jpeg" }),
-            thumbnailKey
-          );
+          await getSignedUploadUrl(thumbnailFileInfo, thumbnailKey);
 
         // Upload thumbnail to S3
         const thumbnailResponse = await fetch(thumbnailSignedUrl, {
