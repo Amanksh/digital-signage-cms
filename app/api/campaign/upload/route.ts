@@ -12,17 +12,14 @@ const MAX_ASSETS_PER_CAMPAIGN = 9;
 
 export async function POST(request: Request) {
   try {
-    // First establish database connection
     await connectDB();
 
-    // Then get the session
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // Double check the user exists in database
     const user = await User.findById(session.user.id);
     if (!user) {
       return new NextResponse("User not found", { status: 404 });
@@ -30,64 +27,58 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
-    const name = (formData.get("name") as string) || file?.name; // Use filename if name not provided
+    const name = formData.get("name") as string;
     const type = formData.get("type") as "IMAGE" | "VIDEO" | "HTML" | "URL";
     const thumbnail = formData.get("thumbnail") as string;
-    const campaignId = formData.get("campaignId") as string | null;
+    const campaignId = formData.get("campaignId") as string;
 
-    if (!file || !type) {
+    if (!file || !name || !type) {
       return new NextResponse("Missing required fields", { status: 400 });
     }
 
-    // If campaignId is provided, validate it
-    let validCampaignId: string | null = null;
-    if (campaignId && campaignId !== "null" && campaignId !== "") {
-      // Validate campaignId format
-      if (!mongoose.Types.ObjectId.isValid(campaignId)) {
-        return NextResponse.json(
-          { error: "Invalid campaign ID" },
-          { status: 400 }
-        );
-      }
+    if (!campaignId) {
+      return NextResponse.json(
+        { error: "Campaign ID is required" },
+        { status: 400 }
+      );
+    }
 
-      // Verify campaign exists and belongs to the user
-      const campaign = await Campaign.findOne({
-        _id: campaignId,
-        userId: session.user.id,
-      });
+    if (!mongoose.Types.ObjectId.isValid(campaignId)) {
+      return NextResponse.json(
+        { error: "Invalid campaign ID" },
+        { status: 400 }
+      );
+    }
 
-      if (!campaign) {
-        return NextResponse.json(
-          { error: "Campaign not found" },
-          { status: 404 }
-        );
-      }
+    // Verify campaign exists and belongs to the user
+    const campaign = await Campaign.findOne({
+      _id: campaignId,
+      userId: session.user.id,
+    });
 
-      // Check asset count limit for this campaign
-      const assetCount = await Asset.countDocuments({ campaignId });
-      if (assetCount >= MAX_ASSETS_PER_CAMPAIGN) {
-        return NextResponse.json(
-          { error: "Maximum 9 assets allowed in one Campaign." },
-          { status: 400 }
-        );
-      }
+    if (!campaign) {
+      return NextResponse.json(
+        { error: "Campaign not found" },
+        { status: 404 }
+      );
+    }
 
-      validCampaignId = campaignId;
+    // Check asset count limit for this campaign
+    const assetCount = await Asset.countDocuments({ campaignId });
+    if (assetCount >= MAX_ASSETS_PER_CAMPAIGN) {
+      return NextResponse.json(
+        { error: "Maximum 9 assets allowed in one Campaign." },
+        { status: 400 }
+      );
     }
 
     try {
-      // Generate a unique key for the file in S3 using user's email
       const key = generateS3Key(file, session.user.email!);
-
-      // Get signed URL for direct upload
       const { signedUrl, publicUrl } = await getSignedUploadUrl(file, key);
 
-      // If it's a video and we have a thumbnail, upload it to S3
       let thumbnailUrl = null;
       if (type === "VIDEO" && thumbnail) {
         const thumbnailKey = `${key}_thumb.jpg`;
-
-        // Convert base64 to Blob
         const base64Data = thumbnail.split(",")[1];
         const binaryData = Buffer.from(base64Data, "base64");
         const thumbnailBlob = new Blob([binaryData], { type: "image/jpeg" });
@@ -98,13 +89,10 @@ export async function POST(request: Request) {
             thumbnailKey
           );
 
-        // Upload thumbnail to S3
         const thumbnailResponse = await fetch(thumbnailSignedUrl, {
           method: "PUT",
           body: thumbnailBlob,
-          headers: {
-            "Content-Type": "image/jpeg",
-          },
+          headers: { "Content-Type": "image/jpeg" },
         });
 
         if (!thumbnailResponse.ok) {
@@ -114,8 +102,6 @@ export async function POST(request: Request) {
         thumbnailUrl = thumbnailPublicUrl;
       }
 
-      // Create the asset record with the S3 URL
-      // campaignId will be null for direct assets
       const asset = await Asset.create({
         name,
         type,
@@ -124,10 +110,23 @@ export async function POST(request: Request) {
         duration: type === "VIDEO" ? 1 : 10,
         size: file.size,
         userId: session.user.id,
-        campaignId: validCampaignId,
+        campaignId: campaignId,
       });
 
-      return NextResponse.json({ asset, signedUrl });
+      return NextResponse.json({
+        asset: {
+          assetId: asset._id,
+          _id: asset._id,
+          name: asset.name,
+          type: asset.type,
+          url: asset.url,
+          thumbnail: asset.thumbnail,
+          duration: asset.duration,
+          size: asset.size,
+          createdAt: asset.createdAt,
+        },
+        signedUrl,
+      });
     } catch (uploadError) {
       console.error("[S3_UPLOAD_ERROR]", uploadError);
       return new NextResponse(
@@ -138,7 +137,8 @@ export async function POST(request: Request) {
       );
     }
   } catch (error) {
-    console.error("[ASSET_UPLOAD_ERROR]", error);
+    console.error("[CAMPAIGN_UPLOAD_ERROR]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
+

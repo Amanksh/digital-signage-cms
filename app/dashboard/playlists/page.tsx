@@ -10,6 +10,8 @@ import {
   Plus,
   Search,
   Trash,
+  FolderOpen,
+  Layers,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -30,13 +32,30 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
+
+type CampaignData = {
+  _id: string;
+  name: string;
+  description: string;
+  assetCount: number;
+  previewAssets: {
+    _id: string;
+    url: string;
+    thumbnail?: string;
+    type: string;
+  }[];
+};
 
 type Playlist = {
   _id: string;
   name: string;
   description: string;
   status: "active" | "inactive" | "scheduled";
-  items: {
+  campaignIds: CampaignData[];
+  totalAssets?: number;
+  // Legacy support
+  items?: {
     assetId: {
       _id: string;
       name: string;
@@ -73,7 +92,6 @@ export default function PlaylistsPage() {
       const response = await fetch("/api/playlists");
       if (!response.ok) throw new Error("Failed to fetch playlists");
       const data = await response.json();
-      console.log(data);
       setPlaylists(data);
     } catch (error) {
       console.error("Error fetching playlists:", error);
@@ -116,7 +134,7 @@ export default function PlaylistsPage() {
   const filteredPlaylists = playlists.filter((playlist) => {
     const matchesSearch =
       playlist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      playlist.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (playlist.description || "").toLowerCase().includes(searchQuery.toLowerCase());
 
     if (activeTab === "all") return matchesSearch;
     return matchesSearch && playlist.status === activeTab;
@@ -133,13 +151,6 @@ export default function PlaylistsPage() {
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-800/30 dark:text-gray-400";
     }
-  };
-
-  const formatDuration = (items: Playlist["items"]) => {
-    const totalSeconds = items.reduce((acc, item) => acc + item.duration, 0);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   if (isLoading) {
@@ -186,15 +197,31 @@ export default function PlaylistsPage() {
           <TabsTrigger value="inactive">Inactive</TabsTrigger>
         </TabsList>
         <TabsContent value={activeTab} className="mt-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredPlaylists.map((playlist) => (
-              <PlaylistCard
-                key={playlist._id}
-                playlist={playlist}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
+          {filteredPlaylists.length === 0 ? (
+            <Card className="flex flex-col items-center justify-center p-12">
+              <Layers className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No playlists yet</h3>
+              <p className="text-muted-foreground text-center mb-4">
+                Create your first playlist by selecting campaigns.
+              </p>
+              <Link href="/dashboard/playlists/new">
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Playlist
+                </Button>
+              </Link>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredPlaylists.map((playlist) => (
+                <PlaylistCard
+                  key={playlist._id}
+                  playlist={playlist}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
@@ -222,28 +249,48 @@ function PlaylistCard({
     }
   };
 
-  const formatDuration = (items: Playlist["items"]) => {
-    const totalSeconds = items.reduce((acc, item) => acc + item.duration, 0);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  // Get thumbnail from campaigns or legacy items
+  const findThumbnail = () => {
+    // Try campaigns first
+    if (playlist.campaignIds && playlist.campaignIds.length > 0) {
+      for (const campaign of playlist.campaignIds) {
+        if (campaign.previewAssets && campaign.previewAssets.length > 0) {
+          const asset = campaign.previewAssets[0];
+          if (asset.type === "IMAGE") return asset.url;
+          if (asset.type === "VIDEO") return asset.thumbnail || "/video.webp";
+          return "/url.jpg";
+        }
+      }
+    }
+
+    // Fallback to legacy items
+    if (playlist.items && playlist.items.length > 0) {
+      const imageItem = playlist.items.find(
+        (item) =>
+          item.assetId?.type?.startsWith("image/") ||
+          item.assetId?.url?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+      );
+      return (
+        imageItem?.assetId?.thumbnail || imageItem?.assetId?.url || "/playlist.png"
+      );
+    }
+
+    return "/playlist.png";
   };
 
-  // Find the first image asset in the playlist items
-  const findImageAsset = () => {
-    const imageItem = playlist.items.find(item => 
-      item.assetId?.type?.startsWith('image/') || 
-      item.assetId?.url?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
-    );
-    
-    return imageItem?.assetId?.thumbnail || imageItem?.assetId?.url || "/playlist.png";
-  };
-
-  const thumbnail = findImageAsset();
+  const thumbnail = findThumbnail();
 
   const handlePreview = () => {
     router.push(`/dashboard/playlists/preview/${playlist._id}`);
   };
+
+  // Get counts
+  const campaignCount = playlist.campaignIds?.length || 0;
+  const assetCount =
+    playlist.totalAssets ||
+    playlist.campaignIds?.reduce((sum, c) => sum + (c.assetCount || 0), 0) ||
+    playlist.items?.length ||
+    0;
 
   return (
     <Card>
@@ -312,13 +359,31 @@ function PlaylistCard({
       </CardHeader>
       <CardContent className="pb-2">
         <p className="text-sm text-muted-foreground">{playlist.description}</p>
+        {campaignCount > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {playlist.campaignIds.slice(0, 3).map((campaign) => (
+              <Badge key={campaign._id} variant="secondary" className="text-xs">
+                <FolderOpen className="mr-1 h-3 w-3" />
+                {campaign.name}
+              </Badge>
+            ))}
+            {campaignCount > 3 && (
+              <Badge variant="outline" className="text-xs">
+                +{campaignCount - 3} more
+              </Badge>
+            )}
+          </div>
+        )}
       </CardContent>
       <CardFooter className="flex justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          {formatDuration(playlist.items)}
+          <FolderOpen className="h-3 w-3" />
+          {campaignCount} campaigns
         </div>
-        <div>{playlist.items.length} items</div>
+        <div className="flex items-center gap-1">
+          <Layers className="h-3 w-3" />
+          {assetCount} assets
+        </div>
       </CardFooter>
     </Card>
   );
